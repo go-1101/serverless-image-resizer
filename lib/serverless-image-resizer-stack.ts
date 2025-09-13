@@ -28,10 +28,11 @@ export class ServerlessImageResizerStack extends cdk.Stack {
       memorySize: 1024,
       timeout: cdk.Duration.seconds(30),
       bundling: {
-        // sharpはLambda Layerではなく、コンテナ内でビルドしてバンドルする
-        externalModules: ['@aws-sdk/*'], // AWS SDKは外部モジュールとして残す
+        externalModules: ['@aws-sdk/*'],
+        // --- ここから追加 ---
+        forceDockerBundling: true,
+        // --- ここまで追加 ---
       },
-      // layersプロパティは完全に削除
     });
 
     sourceBucket.addEventNotification(
