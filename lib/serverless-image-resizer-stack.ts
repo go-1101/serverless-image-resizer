@@ -4,7 +4,6 @@ import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
 import * as path from 'path';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 
-
 export class ServerlessImageResizerStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -19,16 +18,20 @@ export class ServerlessImageResizerStack extends cdk.Stack {
       autoDeleteObjects: true,
     });
 
-    // Lambda関数をNodejsFunctionに変更
     const imageResizerLambda = new NodejsFunction(this, 'ImageResizerLambda', {
       runtime: cdk.aws_lambda.Runtime.NODEJS_18_X,
-      entry: path.join(__dirname, '../lambda/index.ts'), // Lambdaコードのエントリーポイントを指定
+      entry: path.join(__dirname, '../lambda/index.ts'),
       handler: 'handler',
       environment: {
         DESTINATION_BUCKET_NAME: destinationBucket.bucketName,
       },
       memorySize: 1024,
       timeout: cdk.Duration.seconds(30),
+      // --- ここから追加 ---
+      bundling: {
+        externalModules: ['sharp'], // sharpを外部依存関係として扱う
+      },
+      // --- ここまで追加 ---
     });
 
     sourceBucket.addEventNotification(
