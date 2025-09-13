@@ -28,9 +28,19 @@ export class ServerlessImageResizerStack extends cdk.Stack {
       memorySize: 1024,
       timeout: cdk.Duration.seconds(30),
       bundling: {
-        // sharpとAWS SDKのモジュールを外部依存として扱う
+        // sharpとAWS SDKを外部依存として扱う
         externalModules: ['sharp', '@aws-sdk/*'], 
       },
+      // --- ここから追加 ---
+      // Lambda Layerとしてsharpを明示的に追加
+      layers: [
+        cdk.aws_lambda.LayerVersion.fromLayerVersionArn(
+          this,
+          'SharpLayer',
+          `arn:aws:lambda:${cdk.Stack.of(this).region}:708307185010:layer:sharp-lambda-layer:1`
+        ),
+      ],
+      // --- ここまで追加 ---
     });
 
     sourceBucket.addEventNotification(
