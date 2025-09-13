@@ -1,16 +1,42 @@
 import * as cdk from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
+import * as path from 'path';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+
 
 export class ServerlessImageResizerStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
+    const sourceBucket = new s3.Bucket(this, 'SourceBucket', {
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    });
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'ServerlessImageResizerQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    const destinationBucket = new s3.Bucket(this, 'DestinationBucket', {
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    });
+
+    // Lambda関数をNodejsFunctionに変更
+    const imageResizerLambda = new NodejsFunction(this, 'ImageResizerLambda', {
+      runtime: cdk.aws_lambda.Runtime.NODEJS_18_X,
+      entry: path.join(__dirname, '../lambda/index.ts'), // Lambdaコードのエントリーポイントを指定
+      handler: 'handler',
+      environment: {
+        DESTINATION_BUCKET_NAME: destinationBucket.bucketName,
+      },
+      memorySize: 1024,
+      timeout: cdk.Duration.seconds(30),
+    });
+
+    sourceBucket.addEventNotification(
+      s3.EventType.OBJECT_CREATED,
+      new s3n.LambdaDestination(imageResizerLambda)
+    );
+
+    sourceBucket.grantRead(imageResizerLambda);
+    destinationBucket.grantWrite(imageResizerLambda);
   }
 }
