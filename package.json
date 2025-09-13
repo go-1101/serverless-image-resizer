@@ -18,14 +18,13 @@
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
     "typescript": "~5.4.5",
-    "sharp": "^0.33.4"  // <-- ここに追加
+    "sharp": "^0.33.4"
   },
   "dependencies": {
     "aws-cdk-lib": "2.146.0",
     "constructs": "^10.3.0",
     "source-map-support": "^0.5.21",
     "@aws-sdk/client-s3": "^3.606.0",
-    "@aws-sdk/client-sqs": "^3.606.0",
-    "sharp": "^0.33.4" // <-- ここから削除、あるいは元々ないことを確認
+    "@aws-sdk/client-sqs": "^3.606.0"
   }
 }
