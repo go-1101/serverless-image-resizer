@@ -35,10 +35,8 @@ export class ServerlessImageResizerStack extends cdk.Stack {
       bundling: {
         externalModules: ['@aws-sdk/*'],
         forceDockerBundling: true,
-        // ここにビルド中のコマンドを追加
-        commands: [
-          'npm install --arch=x64 --platform=linux sharp',
-        ],
+        // commandプロパティを単数形に修正し、複数のコマンドを論理AND (&&) で連結
+        command: 'npm install --arch=x64 --platform=linux sharp && npm run build',
       },
     });
 
