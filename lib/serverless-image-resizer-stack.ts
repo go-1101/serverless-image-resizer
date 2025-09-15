@@ -8,7 +8,6 @@ export class ServerlessImageResizerStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // インプット用S3バケット。30日後にオブジェクトを自動削除する設定を追加。
     const sourceBucket = new s3.Bucket(this, 'SourceBucket', {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -24,7 +23,6 @@ export class ServerlessImageResizerStack extends cdk.Stack {
       autoDeleteObjects: true,
     });
 
-    // LambdaランタイムをNode.js 20に更新
     const imageResizerLambda = new NodejsFunction(this, 'ImageResizerLambda', {
       runtime: cdk.aws_lambda.Runtime.NODEJS_20_X,
       entry: path.join(__dirname, '../lambda/index.ts'),
@@ -36,8 +34,11 @@ export class ServerlessImageResizerStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(30),
       bundling: {
         externalModules: ['@aws-sdk/*'],
-        // Dockerを強制して、Lambda環境に合ったsharpをビルドする
         forceDockerBundling: true,
+        // ここにビルド中のコマンドを追加
+        commands: [
+          'npm install --arch=x64 --platform=linux sharp',
+        ],
       },
     });
 
